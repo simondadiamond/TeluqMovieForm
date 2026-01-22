@@ -1,0 +1,157 @@
+@page "/"
+@using TeluqMovieForm.Models
+@using TeluqMovieForm.Services
+@implements IDisposable
+@inject IMovieService MovieService
+@inject NavigationManager Navigation
+
+<div class="teluq-container">
+    @if (_isSubmitted)
+    {
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <span class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></span>
+            </div>
+            <h1 class="mb-3">Demande transmise avec succès</h1>
+            <p class="lead mb-4">
+                Merci, <strong>@_model.ApplicantFirstName</strong>. Votre demande de réservation a été enregistrée avec succès par nos services. 
+                Un courriel de confirmation contenant les détails de la procédure d'emprunt vient de vous être envoyé à l'adresse <em>@_model.Email</em>.
+            </p>
+            <button class="btn teluq-primary-btn px-4" @onclick="ResetForm">Effectuer une autre demande</button>
+        </div>
+    }
+    else
+    {
+        <h1 class="mb-4">Demande de réservation de film</h1>
+
+        <div class="alert alert-light border mb-4 shadow-sm" role="note">
+            <h5 class="alert-heading">
+                <i class="bi bi-info-circle-fill me-2 text-success"></i>
+                Pourquoi ces règles de validation?
+            </h5>
+            <p class="mb-0 text-muted">
+                Nous vérifions le format de vos coordonnées (code postal, courriel) pour garantir que la réservation vous soit bien attribuée. 
+                Le test du nombre impair sert uniquement à protéger le système contre les robots.
+            </p>
+        </div>
+
+        <EditForm EditContext="@_editContext" OnValidSubmit="@HandleValidSubmit">
+            <DataAnnotationsValidator />
+
+            <fieldset class="border p-4 rounded mb-4">
+                <legend class="w-auto px-2 h5">Sélection du film</legend>
+                
+                <div class="mb-3">
+                    <label for="movie" class="form-label">Film souhaité</label>
+                    <InputSelect id="movie" @bind-Value="_model.MovieUrl" class="form-select">
+                        <option value="">-- Choisir un film dans la liste --</option>
+                        @foreach (var movie in _movies)
+                        {
+                            <option value="@movie.Url">@movie.Title</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => _model.MovieUrl)" />
+                </div>
+            </fieldset>
+
+            <fieldset class="border p-4 rounded mb-4">
+                <legend class="w-auto px-2 h5">Coordonnées du demandeur</legend>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="firstName" class="form-label">Prénom du demandeur</label>
+                        <InputText id="firstName" @bind-Value="_model.ApplicantFirstName" class="form-control" />
+                        <ValidationMessage For="@(() => _model.ApplicantFirstName)" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="lastName" class="form-label">Nom du demandeur</label>
+                        <InputText id="lastName" @bind-Value="_model.ApplicantLastName" class="form-control" />
+                        <ValidationMessage For="@(() => _model.ApplicantLastName)" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Courriel</label>
+                    <InputText id="email" @bind-Value="_model.Email" class="form-control" type="email" />
+                    <ValidationMessage For="@(() => _model.Email)" />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="phone" class="form-label">Téléphone (Optionnel)</label>
+                        <InputText id="phone" @bind-Value="_model.PhoneNumber" class="form-control" @onfocusout="@(() => _editContext?.Validate())"/>
+                        <div class="form-text">Format nord-américain (ex: 555-555-5555)</div>
+                        <ValidationMessage For="@(() => _model.PhoneNumber)" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="postalCode" class="form-label">Code Postal (Optionnel)</label>
+                        <InputText id="postalCode" @bind-Value="_model.PostalCode" class="form-control" />
+                        <div class="form-text">Format canadien (ex: A1A 1A1)</div>
+                        <ValidationMessage For="@(() => _model.PostalCode)" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="oddNumber" class="form-label">Nombre impair</label>
+                    <InputNumber id="oddNumber" 
+                                class="form-control" 
+                                @bind-Value="_model.OddNumber" 
+                                placeholder="Nombre impair"
+                                @onfocusout="@(() => _editContext?.Validate())" />
+                    <ValidationMessage For="@(() => _model.OddNumber)" />
+                </div>
+            </fieldset>
+
+            <button type="submit" class="btn teluq-primary-btn w-100 py-2">Confirmer la réservation</button>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private MovieRegistrationModel _model = new();
+    private EditContext? _editContext;
+    private IEnumerable<MovieResult> _movies = Enumerable.Empty<MovieResult>();
+    private bool _isSubmitted = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Navigation.LocationChanged += HandleLocationChanged;
+        _editContext = new EditContext(_model);
+        _movies = await MovieService.GetMoviesAsync();
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= HandleLocationChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (_isSubmitted && Navigation.Uri == Navigation.BaseUri)
+        {
+            ResetForm();
+            StateHasChanged();
+        }
+    }
+
+    private void HandleValidSubmit()
+    {
+        _isSubmitted = true;
+        Console.WriteLine($"Formulaire soumis pour: {_model.ApplicantFirstName} {_model.ApplicantLastName}");
+        Navigation.NavigateTo("?submitted=true");
+    }
+
+    private void ResetForm()
+    {
+        _model = new MovieRegistrationModel();
+        _editContext = new EditContext(_model);
+        _isSubmitted = false;
+
+        if (Navigation.Uri.Contains("submitted=true"))
+        {
+            Navigation.NavigateTo(Navigation.BaseUri);
+        }
+    }
+}
