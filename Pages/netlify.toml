@@ -1,0 +1,8 @@
+[build]
+  command = "dotnet publish -c Release -o output"
+  publish = "output/wwwroot"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

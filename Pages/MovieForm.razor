@@ -80,7 +80,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="phone" class="form-label">Téléphone (Optionnel)</label>
-                        <InputText id="phone" @bind-Value="_model.PhoneNumber" class="form-control" @onfocusout="@(() => _editContext?.Validate())"/>
+                        <InputText id="phone" @bind-Value="_model.PhoneNumber" class="form-control"  @onfocusout="@(() => _editContext?.Validate())"/>
                         <div class="form-text">Format nord-américain (ex: 555-555-5555)</div>
                         <ValidationMessage For="@(() => _model.PhoneNumber)" />
                     </div>
