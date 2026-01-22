@@ -60,7 +60,7 @@ public class MovieRegistrationModel
     
 
     [Required(ErrorMessage = "Ce champ est requis.")]
-    [OddNumber(ErrorMessage = "Le nombre doit être impair.")]
+    [OddNumber]
     public int? OddNumber { get; set; }
 
     public class CanadianPostalCodeAttribute : ValidationAttribute
@@ -84,21 +84,19 @@ public class MovieRegistrationModel
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
-            // Allow null - let [Required] handle that
             if (value is null)
             {
                 return ValidationResult.Success;
             }
 
-            // Validate the actual value
             if (value is int number)
-            {
-                if (number == 0 || number % 2 == 0)
                 {
-                    return new ValidationResult(ErrorMessage ?? "Le nombre doit être impair.", new[] { validationContext.MemberName! });
+                    if (number % 2 == 0 || number < 0)
+                    {
+                        return new ValidationResult(ErrorMessage ?? "Le nombre doit être impair et positif.", new[] { validationContext.MemberName! });
+                    }
+                    return ValidationResult.Success;
                 }
-                return ValidationResult.Success;
-            }
 
             return new ValidationResult("Format invalide.", new[] { validationContext.MemberName! });
         }
