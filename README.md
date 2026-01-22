@@ -4,7 +4,7 @@ Application Blazor WebAssembly pour la gestion des demandes de réservation de f
 
 ## 🔗 Démo en ligne
 
-**Lien de démonstration:** [\[https://teluqmovieform.netlify.app\]](https://teluqmovieform.netlify.app/)
+**Lien de démonstration:** [https://teluqmovieform.netlify.app](https://teluqmovieform.netlify.app/)
 
 ## 🚀 Comment exécuter le projet
 
@@ -42,46 +42,110 @@ dotnet publish -c Release
 
 ## 📋 Schéma d'organisation du formulaire et validations
 
-### SECTION 1 : SÉLECTION DU FILM
+```mermaid
+graph TD
+    User([Utilisateur]) -->|Soumet| Start{Début Validation}
 
-**MovieUrl** (InputSelect - Liste déroulante)
-- `[Required]` Ce champ est requis
-- `[Url]` Le lien doit être une URL valide
-- `[StringLength(200)]` L'URL est trop longue
+    subgraph "1. Sélection du Film"
+        direction TB
+        Movie[<b>MovieUrl</b>] --> M_Req{Est rempli?}
+        M_Req -- Non --> ErrM1[Erreur: Requis]
+        M_Req -- Oui --> M_Url{Format URL valide?}
+        M_Url -- Non --> ErrM2[Erreur: Lien invalide]
+        M_Url -- Oui --> M_Len{Longueur <= 200?}
+        M_Len -- Non --> ErrM3[Erreur: > 200 caractères]
+        M_Len -- Oui --> M_OK([OK])
+    end
 
-### SECTION 2 : COORDONNÉES DU DEMANDEUR
+    subgraph "2. Coordonnées Demandeur"
+        direction TB
+        %% Last Name
+        LName[<b>Nom (ApplicantLastName)</b>] --> LN_Req{Est rempli?}
+        LN_Req -- Non --> ErrLN1[Erreur: Requis]
+        LN_Req -- Oui --> LN_Len{Longueur <= 50?}
+        LN_Len -- Non --> ErrLN2[Erreur: > 50 caractères]
+        LN_Len -- Oui --> LN_Reg{Regex: Lettres/Accents/-/' ?}
+        LN_Reg -- Non --> ErrLN3[Erreur: Caractères invalides]
+        LN_Reg -- Oui --> LN_OK([OK])
 
-**ApplicantFirstName** (InputText - Champ texte)
-- `[Required]` Ce champ est requis
-- `[StringLength(50)]` La longueur maximale est de 50 caractères
-- `[RegularExpression]` Caractères invalides détectés (accepte : lettres, espaces, apostrophes, traits d'union avec accents français)
+        %% First Name
+        FName[<b>Prénom (ApplicantFirstName)</b>] --> FN_Req{Est rempli?}
+        FN_Req -- Non --> ErrFN1[Erreur: Requis]
+        FN_Req -- Oui --> FN_Len{Longueur <= 50?}
+        FN_Len -- Non --> ErrFN2[Erreur: > 50 caractères]
+        FN_Len -- Oui --> FN_Reg{Regex: Lettres/Accents/-/' ?}
+        FN_Reg -- Non --> ErrFN3[Erreur: Caractères invalides]
+        FN_Reg -- Oui --> FN_OK([OK])
 
-**ApplicantLastName** (InputText - Champ texte)
-- `[Required]` Ce champ est requis
-- `[StringLength(50)]` La longueur maximale est de 50 caractères
-- `[RegularExpression]` Caractères invalides détectés (accepte : lettres, espaces, apostrophes, traits d'union avec accents français)
+        %% Email
+        Email[<b>Courriel</b>] --> E_Auto[Auto: Trim + Lowercase]
+        E_Auto --> E_Req{Est rempli?}
+        E_Req -- Non --> ErrE1[Erreur: Requis]
+        E_Req -- Oui --> E_Fmt{Format courriel?}
+        E_Fmt -- Non --> ErrE2[Erreur: Invalide]
+        E_Fmt -- Oui --> E_Len{Longueur <= 100?}
+        E_Len -- Non --> ErrE3[Erreur: > 100 caractères]
+        E_Len -- Oui --> E_OK([OK])
+    end
 
-**Email** (InputText - Champ courriel)
-- `[Required]` Ce champ est requis
-- `[EmailAddress]` Adresse courriel invalide
-- `[StringLength(100)]` L'adresse courriel est trop longue
-- **Traitement automatique :** suppression des espaces et conversion en minuscules
+    subgraph "3. Champs Optionnels"
+        direction TB
+        %% Phone
+        Phone[<b>Téléphone</b>] --> P_Null{Est vide?}
+        P_Null -- Oui --> P_OK([OK])
+        P_Null -- Non --> P_Reg{Caractères valides?<br/>(Chiffres, espaces, tirets, par.)}
+        P_Reg -- Non --> ErrP1[Erreur: Caractères invalides]
+        P_Reg -- Oui --> P_Len{10 chiffres exacts?}
+        P_Len -- Non --> ErrP2[Erreur: Longueur != 10]
+        P_Len -- Oui --> P_Area{Indicatif/Local commence<br/>par 0 ou 1?}
+        P_Area -- Oui --> ErrP3[Erreur: Format invalide]
+        P_Area -- Non --> P_OK
 
-**PhoneNumber** (InputText - Champ texte) - **OPTIONNEL**
-- `[CanadianPhone]` Le numéro de téléphone est invalide
-- **Format accepté :** 10 chiffres au format nord-américain (ex: 555-555-5555)
-- **Validation :** L'indicatif régional et le numéro local ne peuvent commencer par 0 ou 1
+        %% Postal Code
+        Postal[<b>Code Postal</b>] --> Po_Null{Est vide?}
+        Po_Null -- Oui --> Po_OK([OK])
+        Po_Null -- Non --> Po_Reg{Regex: A1A 1A1?}
+        Po_Reg -- Non --> ErrPo1[Erreur: Invalide]
+        Po_Reg -- Oui --> Po_Auto[Auto: Majuscules + Espace]
+        Po_Auto --> Po_OK
+    end
 
-**PostalCode** (InputText - Champ texte) - **OPTIONNEL**
-- `[CanadianPostalCode]` Le code postal est invalide
-- **Format accepté :** A1A 1A1 (automatiquement formaté avec espace)
-- **Traitement automatique :** Conversion en majuscules et ajout d'espace si nécessaire
+    subgraph "4. Sécurité"
+        direction TB
+        Odd[<b>Nombre Impair</b>] --> O_Req{Est rempli?}
+        O_Req -- Non --> ErrO1[Erreur: Requis]
+        O_Req -- Oui --> O_Logic{Impair ET Positif?<br/>(n % 2 != 0 && n > 0)}
+        O_Logic -- Non --> ErrO2[Erreur: Doit être impair et positif]
+        O_Logic -- Oui --> O_OK([OK])
+    end
 
-**OddNumber** (InputNumber - Champ numérique)
-- `[Required]` Ce champ est requis
-- `[OddNumber]` Le nombre doit être impair
-- **Validation :** Le nombre ne peut être 0 et doit être impair (n % 2 ≠ 0)
+    Start --> Movie & LName & FName & Email & Phone & Postal & Odd
+    
+    M_OK & LN_OK & FN_OK & E_OK & P_OK & Po_OK & O_OK --> Final{Tout valide?}
+    Final -- Oui --> Success[Soumission Réussie]
+    Final -- Non --> Block[Bloquer Soumission]
 
+    %% Error Styles
+    style ErrM1 fill:#ffcccc,stroke:#ff0000
+    style ErrM2 fill:#ffcccc,stroke:#ff0000
+    style ErrM3 fill:#ffcccc,stroke:#ff0000
+    style ErrLN1 fill:#ffcccc,stroke:#ff0000
+    style ErrLN2 fill:#ffcccc,stroke:#ff0000
+    style ErrLN3 fill:#ffcccc,stroke:#ff0000
+    style ErrFN1 fill:#ffcccc,stroke:#ff0000
+    style ErrFN2 fill:#ffcccc,stroke:#ff0000
+    style ErrFN3 fill:#ffcccc,stroke:#ff0000
+    style ErrE1 fill:#ffcccc,stroke:#ff0000
+    style ErrE2 fill:#ffcccc,stroke:#ff0000
+    style ErrE3 fill:#ffcccc,stroke:#ff0000
+    style ErrP1 fill:#ffcccc,stroke:#ff0000
+    style ErrP2 fill:#ffcccc,stroke:#ff0000
+    style ErrP3 fill:#ffcccc,stroke:#ff0000
+    style ErrPo1 fill:#ffcccc,stroke:#ff0000
+    style ErrO1 fill:#ffcccc,stroke:#ff0000
+    style ErrO2 fill:#ffcccc,stroke:#ff0000
+    style Success fill:#ccffcc,stroke:#00aa00
+```
 ---
 
 ## 🔧 Attributs de validation personnalisés
@@ -90,7 +154,8 @@ dotnet publish -c Release
 Vérifie que le nombre saisi est impair.
 - Permet `null` si utilisé avec `[Required]` séparément
 - Valide que : `n ≠ 0` et `n % 2 ≠ 0`
-- Message d'erreur : "Le nombre doit être impair."
+- Valide implicitement que le nombre est positif (n > 0) pour éviter les erreurs logiques
+- Message d'erreur : "Le nombre doit être impair et positif."
 - **Note technique :** Retourne `validationContext.MemberName` pour assurer l'association correcte avec le champ dans l'UI Blazor
 
 ### 2. **CanadianPhoneAttribute**
@@ -143,11 +208,11 @@ TeluqMovieForm/
 ├── Models/
 │   └── MovieRegistrationModel.cs    # Modèle avec validations et attributs personnalisés
 ├── Services/
-│   └── IMovieService.cs              # Interface du service de films
+│   └── IMovieService.cs             # Interface du service de films
 ├── Pages/
-│   └── MovieForm.razor               # Composant principal du formulaire
-├── wwwroot/                          # Fichiers statiques
-└── Program.cs                        # Point d'entrée de l'application
+│   └── MovieForm.razor              # Composant principal du formulaire
+├── wwwroot/                         # Fichiers statiques
+└── Program.cs                       # Point d'entrée de l'application
 ```
 
 ---
