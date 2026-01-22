@@ -1,14 +1,32 @@
 [build]
-  # 1. Download installer
-  # 2. Install .NET 10
-  # 3. Add to PATH
-  # 4. Build app
-  command = "curl -sSL https://dot.net/v1/dotnet-install.sh > dotnet-install.sh && chmod +x dotnet-install.sh && ./dotnet-install.sh --channel 10.0 && export DOTNET_ROOT=$HOME/.dotnet && export PATH=$DOTNET_ROOT:$PATH && dotnet publish -c Release -o output"
-  
-  # Ensure Netlify serves the correct folder
-  publish = "output/wwwroot"
+  command = "dotnet publish -c Release -o release"
+  publish = "release/wwwroot"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Specific settings for favicon
+[[headers]]
+  for = "/favicon.ico"
+  [headers.values]
+    Content-Type = "image/x-icon"
+    Cache-Control = "public, max-age=86400"
+
+# Global Security Headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Protects against Clickjacking
+    X-Frame-Options = "DENY"
+    # Protects against MIME sniffing
+    X-Content-Type-Options = "nosniff"
+    # Protects against XSS attacks in older browsers
+    X-XSS-Protection = "1; mode=block"
+    # Controls how much referrer information is sent
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Force HTTPS (HSTS)
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    # Disable browser features not used by the app to reduce attack surface
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), vr=()"
