@@ -1,4 +1,5 @@
 @page "/"
+@using Microsoft.AspNetCore.Components.Forms
 @using TeluqMovieForm.Models
 @using TeluqMovieForm.Services
 @implements IDisposable
@@ -42,7 +43,7 @@
                 <legend class="w-auto px-2 h5">Sélection du film</legend>
                 
                 <div class="mb-3">
-                    <label for="movie" class="form-label">Film souhaité</label>
+                    <label for="movie" class="form-label">Film souhaité <span class="text-danger" aria-hidden="true">*</span></label>
                     <InputSelect id="movie" @bind-Value="_model.MovieUrl" class="form-select">
                         <option value="">-- Choisir un film dans la liste --</option>
                         @foreach (var movie in _movies)
@@ -59,20 +60,20 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="firstName" class="form-label">Prénom du demandeur</label>
+                        <label for="firstName" class="form-label">Prénom du demandeur <span class="text-danger" aria-hidden="true">*</span></label>
                         <InputText id="firstName" @bind-Value="_model.ApplicantFirstName" class="form-control" />
                         <ValidationMessage For="@(() => _model.ApplicantFirstName)" />
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label for="lastName" class="form-label">Nom du demandeur</label>
+                        <label for="lastName" class="form-label">Nom du demandeur <span class="text-danger" aria-hidden="true">*</span></label>
                         <InputText id="lastName" @bind-Value="_model.ApplicantLastName" class="form-control" />
                         <ValidationMessage For="@(() => _model.ApplicantLastName)" />
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label for="email" class="form-label">Courriel</label>
+                    <label for="email" class="form-label">Courriel <span class="text-danger" aria-hidden="true">*</span></label>
                     <InputText id="email" @bind-Value="_model.Email" class="form-control" type="email" />
                     <ValidationMessage For="@(() => _model.Email)" />
                 </div>
@@ -94,12 +95,8 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="oddNumber" class="form-label">Nombre impair</label>
-                    <InputNumber id="oddNumber" 
-                                class="form-control" 
-                                @bind-Value="_model.OddNumber" 
-                                placeholder="Nombre impair"
-                                @onfocusout="@(() => _editContext?.Validate())" />
+                    <label for="oddNumber" class="form-label">Nombre impair <span class="text-danger" aria-hidden="true">*</span></label>
+                    <InputNumber id="oddNumber" class="form-control" @bind-Value="_model.OddNumber" placeholder="Nombre impair" @onfocusout="@(() => _editContext?.Validate())" />
                     <ValidationMessage For="@(() => _model.OddNumber)" />
                 </div>
             </fieldset>
