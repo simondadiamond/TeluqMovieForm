@@ -1,5 +1,11 @@
 [build]
-  command = "dotnet publish -c Release -o output"
+  # 1. Download installer
+  # 2. Install .NET 10
+  # 3. Add to PATH
+  # 4. Build app
+  command = "curl -sSL https://dot.net/v1/dotnet-install.sh > dotnet-install.sh && chmod +x dotnet-install.sh && ./dotnet-install.sh --channel 10.0 && export DOTNET_ROOT=$HOME/.dotnet && export PATH=$DOTNET_ROOT:$PATH && dotnet publish -c Release -o output"
+  
+  # Ensure Netlify serves the correct folder
   publish = "output/wwwroot"
 
 [[redirects]]
