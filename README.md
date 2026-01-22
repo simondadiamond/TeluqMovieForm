@@ -4,7 +4,7 @@ Application Blazor WebAssembly pour la gestion des demandes de réservation de f
 
 ## 🔗 Démo en ligne
 
-**Lien de démonstration:** [À venir - Sera ajouté après le déploiement]
+**Lien de démonstration:** [\[https://teluqmovieform.netlify.app\]](https://teluqmovieform.netlify.app/)
 
 ## 🚀 Comment exécuter le projet
 
@@ -15,7 +15,7 @@ Application Blazor WebAssembly pour la gestion des demandes de réservation de f
 
 1. **Cloner le dépôt**
    ```bash
-   git clone [URL_DU_DEPOT]
+   git clone https://github.com/simondadiamond/TeluqMovieForm.git
    cd TeluqMovieForm
    ```
 
