@@ -44,107 +44,48 @@ dotnet publish -c Release
 
 ```mermaid
 graph TD
-    User([Utilisateur]) -->|Soumet| Start{Début Validation}
+    User([Utilisateur]) -->|Soumet| Form[Formulaire de Réservation]
 
-    subgraph "1. Sélection du Film"
+    subgraph Validations
         direction TB
-        Movie["<b>MovieUrl</b>"] --> M_Req{"Est rempli?"}
-        M_Req -- Non --> ErrM1["Erreur: Requis"]
-        M_Req -- Oui --> M_Url{"Format URL valide?"}
-        M_Url -- Non --> ErrM2["Erreur: Lien invalide"]
-        M_Url -- Oui --> M_Len{"Longueur <= 200?"}
-        M_Len -- Non --> ErrM3["Erreur: > 200 caractères"]
-        M_Len -- Oui --> M_OK([OK])
+        
+        %% SECTION 1
+        Movie(<b>1. Sélection du Film</b>) --> MovieCheck{URL valide & < 200 car.?}
+        MovieCheck -- Non --> Err1[Erreur: Lien invalide]
+        MovieCheck -- Oui --> OK1([OK])
+
+        %% SECTION 2
+        Applicant(<b>2. Coordonnées Demandeur</b>) --> NameCheck{Prénom/Nom valides?<br/>Requis, Regex, < 50 car.}
+        NameCheck -- Non --> Err2[Erreur: Format/Longueur invalide]
+        NameCheck -- Oui --> EmailCheck{Courriel valide?<br/>Requis, Format, < 100 car.}
+        EmailCheck -- Non --> Err3[Erreur: Format invalide]
+        EmailCheck -- Oui --> OK2([OK])
+
+        %% SECTION 3
+        Optional(<b>3. Champs Optionnels</b>) --> PhoneCheck{Téléphone valide?<br/>10 chiffres, Indicatif OK}
+        PhoneCheck -- Non --> Err4[Erreur: Format invalide]
+        PhoneCheck -- Oui --> PostalCheck{Code Postal valide?<br/>Format A1A 1A1}
+        PostalCheck -- Non --> Err5[Erreur: Format invalide]
+        PostalCheck -- Oui --> OK3([OK])
+
+        %% SECTION 4
+        Security(<b>4. Sécurité</b>) --> OddCheck{Nombre impair et positif?}
+        OddCheck -- Non --> Err6[Erreur: Doit être impair et positif]
+        OddCheck -- Oui --> OK4([OK])
     end
 
-    subgraph "2. Coordonnées Demandeur"
-        direction TB
-        %% Last Name
-        LName["<b>Nom (ApplicantLastName)</b>"] --> LN_Req{"Est rempli?"}
-        LN_Req -- Non --> ErrLN1["Erreur: Requis"]
-        LN_Req -- Oui --> LN_Len{"Longueur <= 50?"}
-        LN_Len -- Non --> ErrLN2["Erreur: > 50 caractères"]
-        LN_Len -- Oui --> LN_Reg{"Regex: Lettres/Accents/-/' ?"}
-        LN_Reg -- Non --> ErrLN3["Erreur: Caractères invalides"]
-        LN_Reg -- Oui --> LN_OK([OK])
+    Form --> Movie & Applicant & Optional & Security
 
-        %% First Name
-        FName["<b>Prénom (ApplicantFirstName)</b>"] --> FN_Req{"Est rempli?"}
-        FN_Req -- Non --> ErrFN1["Erreur: Requis"]
-        FN_Req -- Oui --> FN_Len{"Longueur <= 50?"}
-        FN_Len -- Non --> ErrFN2["Erreur: > 50 caractères"]
-        FN_Len -- Oui --> FN_Reg{"Regex: Lettres/Accents/-/' ?"}
-        FN_Reg -- Non --> ErrFN3["Erreur: Caractères invalides"]
-        FN_Reg -- Oui --> FN_OK([OK])
-
-        %% Email
-        Email["<b>Courriel</b>"] --> E_Auto["Auto: Trim + Lowercase"]
-        E_Auto --> E_Req{"Est rempli?"}
-        E_Req -- Non --> ErrE1["Erreur: Requis"]
-        E_Req -- Oui --> E_Fmt{"Format courriel?"}
-        E_Fmt -- Non --> ErrE2["Erreur: Invalide"]
-        E_Fmt -- Oui --> E_Len{"Longueur <= 100?"}
-        E_Len -- Non --> ErrE3["Erreur: > 100 caractères"]
-        E_Len -- Oui --> E_OK([OK])
-    end
-
-    subgraph "3. Champs Optionnels"
-        direction TB
-        %% Phone
-        Phone["<b>Téléphone</b>"] --> P_Null{"Est vide?"}
-        P_Null -- Oui --> P_OK([OK])
-        P_Null -- Non --> P_Reg{"Caractères valides?<br/>(Chiffres, espaces, tirets, par.)"}
-        P_Reg -- Non --> ErrP1["Erreur: Caractères invalides"]
-        P_Reg -- Oui --> P_Len{"10 chiffres exacts?"}
-        P_Len -- Non --> ErrP2["Erreur: Longueur != 10"]
-        P_Len -- Oui --> P_Area{"Indicatif/Local commence<br/>par 0 ou 1?"}
-        P_Area -- Oui --> ErrP3["Erreur: Format invalide"]
-        P_Area -- Non --> P_OK
-
-        %% Postal Code
-        Postal["<b>Code Postal</b>"] --> Po_Null{"Est vide?"}
-        Po_Null -- Oui --> Po_OK([OK])
-        Po_Null -- Non --> Po_Reg{"Regex: A1A 1A1?"}
-        Po_Reg -- Non --> ErrPo1["Erreur: Invalide"]
-        Po_Reg -- Oui --> Po_Auto["Auto: Majuscules + Espace"]
-        Po_Auto --> Po_OK
-    end
-
-    subgraph "4. Sécurité"
-        direction TB
-        Odd["<b>Nombre Impair</b>"] --> O_Req{"Est rempli?"}
-        O_Req -- Non --> ErrO1["Erreur: Requis"]
-        O_Req -- Oui --> O_Logic{"Impair ET Positif?<br/>(n % 2 != 0 && n > 0)"}
-        O_Logic -- Non --> ErrO2["Erreur: Doit être impair et positif"]
-        O_Logic -- Oui --> O_OK([OK])
-    end
-
-    Start --> Movie & LName & FName & Email & Phone & Postal & Odd
-    
-    M_OK & LN_OK & FN_OK & E_OK & P_OK & Po_OK & O_OK --> Final{Tout valide?}
+    OK1 & OK2 & OK3 & OK4 --> Final{Toutes validations OK?}
     Final -- Oui --> Success[Soumission Réussie]
     Final -- Non --> Block[Bloquer Soumission]
 
-    %% Error Styles
-    style ErrM1 fill:#ffcccc,stroke:#ff0000
-    style ErrM2 fill:#ffcccc,stroke:#ff0000
-    style ErrM3 fill:#ffcccc,stroke:#ff0000
-    style ErrLN1 fill:#ffcccc,stroke:#ff0000
-    style ErrLN2 fill:#ffcccc,stroke:#ff0000
-    style ErrLN3 fill:#ffcccc,stroke:#ff0000
-    style ErrFN1 fill:#ffcccc,stroke:#ff0000
-    style ErrFN2 fill:#ffcccc,stroke:#ff0000
-    style ErrFN3 fill:#ffcccc,stroke:#ff0000
-    style ErrE1 fill:#ffcccc,stroke:#ff0000
-    style ErrE2 fill:#ffcccc,stroke:#ff0000
-    style ErrE3 fill:#ffcccc,stroke:#ff0000
-    style ErrP1 fill:#ffcccc,stroke:#ff0000
-    style ErrP2 fill:#ffcccc,stroke:#ff0000
-    style ErrP3 fill:#ffcccc,stroke:#ff0000
-    style ErrPo1 fill:#ffcccc,stroke:#ff0000
-    style ErrO1 fill:#ffcccc,stroke:#ff0000
-    style ErrO2 fill:#ffcccc,stroke:#ff0000
-    style Success fill:#ccffcc,stroke:#00aa00
+    %% High Contrast Error Styles
+    %% Fill: Light Red, Stroke: Dark Red, Text: Black
+    classDef errorBox fill:#ffcccc,stroke:#b30000,stroke-width:2px,color:#000000;
+    class Err1,Err2,Err3,Err4,Err5,Err6 errorBox;
+    
+    style Success fill:#ccffcc,stroke:#00aa00,color:#000000
 ```
 ---
 
