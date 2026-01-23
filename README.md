@@ -48,74 +48,74 @@ graph TD
 
     subgraph "1. Sélection du Film"
         direction TB
-        Movie[<b>MovieUrl</b>] --> M_Req{Est rempli?}
-        M_Req -- Non --> ErrM1[Erreur: Requis]
-        M_Req -- Oui --> M_Url{Format URL valide?}
-        M_Url -- Non --> ErrM2[Erreur: Lien invalide]
-        M_Url -- Oui --> M_Len{Longueur <= 200?}
-        M_Len -- Non --> ErrM3[Erreur: > 200 caractères]
+        Movie["<b>MovieUrl</b>"] --> M_Req{"Est rempli?"}
+        M_Req -- Non --> ErrM1["Erreur: Requis"]
+        M_Req -- Oui --> M_Url{"Format URL valide?"}
+        M_Url -- Non --> ErrM2["Erreur: Lien invalide"]
+        M_Url -- Oui --> M_Len{"Longueur <= 200?"}
+        M_Len -- Non --> ErrM3["Erreur: > 200 caractères"]
         M_Len -- Oui --> M_OK([OK])
     end
 
     subgraph "2. Coordonnées Demandeur"
         direction TB
         %% Last Name
-        LName[<b>Nom (ApplicantLastName)</b>] --> LN_Req{Est rempli?}
-        LN_Req -- Non --> ErrLN1[Erreur: Requis]
-        LN_Req -- Oui --> LN_Len{Longueur <= 50?}
-        LN_Len -- Non --> ErrLN2[Erreur: > 50 caractères]
-        LN_Len -- Oui --> LN_Reg{Regex: Lettres/Accents/-/' ?}
-        LN_Reg -- Non --> ErrLN3[Erreur: Caractères invalides]
+        LName["<b>Nom (ApplicantLastName)</b>"] --> LN_Req{"Est rempli?"}
+        LN_Req -- Non --> ErrLN1["Erreur: Requis"]
+        LN_Req -- Oui --> LN_Len{"Longueur <= 50?"}
+        LN_Len -- Non --> ErrLN2["Erreur: > 50 caractères"]
+        LN_Len -- Oui --> LN_Reg{"Regex: Lettres/Accents/-/' ?"}
+        LN_Reg -- Non --> ErrLN3["Erreur: Caractères invalides"]
         LN_Reg -- Oui --> LN_OK([OK])
 
         %% First Name
-        FName[<b>Prénom (ApplicantFirstName)</b>] --> FN_Req{Est rempli?}
-        FN_Req -- Non --> ErrFN1[Erreur: Requis]
-        FN_Req -- Oui --> FN_Len{Longueur <= 50?}
-        FN_Len -- Non --> ErrFN2[Erreur: > 50 caractères]
-        FN_Len -- Oui --> FN_Reg{Regex: Lettres/Accents/-/' ?}
-        FN_Reg -- Non --> ErrFN3[Erreur: Caractères invalides]
+        FName["<b>Prénom (ApplicantFirstName)</b>"] --> FN_Req{"Est rempli?"}
+        FN_Req -- Non --> ErrFN1["Erreur: Requis"]
+        FN_Req -- Oui --> FN_Len{"Longueur <= 50?"}
+        FN_Len -- Non --> ErrFN2["Erreur: > 50 caractères"]
+        FN_Len -- Oui --> FN_Reg{"Regex: Lettres/Accents/-/' ?"}
+        FN_Reg -- Non --> ErrFN3["Erreur: Caractères invalides"]
         FN_Reg -- Oui --> FN_OK([OK])
 
         %% Email
-        Email[<b>Courriel</b>] --> E_Auto[Auto: Trim + Lowercase]
-        E_Auto --> E_Req{Est rempli?}
-        E_Req -- Non --> ErrE1[Erreur: Requis]
-        E_Req -- Oui --> E_Fmt{Format courriel?}
-        E_Fmt -- Non --> ErrE2[Erreur: Invalide]
-        E_Fmt -- Oui --> E_Len{Longueur <= 100?}
-        E_Len -- Non --> ErrE3[Erreur: > 100 caractères]
+        Email["<b>Courriel</b>"] --> E_Auto["Auto: Trim + Lowercase"]
+        E_Auto --> E_Req{"Est rempli?"}
+        E_Req -- Non --> ErrE1["Erreur: Requis"]
+        E_Req -- Oui --> E_Fmt{"Format courriel?"}
+        E_Fmt -- Non --> ErrE2["Erreur: Invalide"]
+        E_Fmt -- Oui --> E_Len{"Longueur <= 100?"}
+        E_Len -- Non --> ErrE3["Erreur: > 100 caractères"]
         E_Len -- Oui --> E_OK([OK])
     end
 
     subgraph "3. Champs Optionnels"
         direction TB
         %% Phone
-        Phone[<b>Téléphone</b>] --> P_Null{Est vide?}
+        Phone["<b>Téléphone</b>"] --> P_Null{"Est vide?"}
         P_Null -- Oui --> P_OK([OK])
-        P_Null -- Non --> P_Reg{Caractères valides?<br/>(Chiffres, espaces, tirets, par.)}
-        P_Reg -- Non --> ErrP1[Erreur: Caractères invalides]
-        P_Reg -- Oui --> P_Len{10 chiffres exacts?}
-        P_Len -- Non --> ErrP2[Erreur: Longueur != 10]
-        P_Len -- Oui --> P_Area{Indicatif/Local commence<br/>par 0 ou 1?}
-        P_Area -- Oui --> ErrP3[Erreur: Format invalide]
+        P_Null -- Non --> P_Reg{"Caractères valides?<br/>(Chiffres, espaces, tirets, par.)"}
+        P_Reg -- Non --> ErrP1["Erreur: Caractères invalides"]
+        P_Reg -- Oui --> P_Len{"10 chiffres exacts?"}
+        P_Len -- Non --> ErrP2["Erreur: Longueur != 10"]
+        P_Len -- Oui --> P_Area{"Indicatif/Local commence<br/>par 0 ou 1?"}
+        P_Area -- Oui --> ErrP3["Erreur: Format invalide"]
         P_Area -- Non --> P_OK
 
         %% Postal Code
-        Postal[<b>Code Postal</b>] --> Po_Null{Est vide?}
+        Postal["<b>Code Postal</b>"] --> Po_Null{"Est vide?"}
         Po_Null -- Oui --> Po_OK([OK])
-        Po_Null -- Non --> Po_Reg{Regex: A1A 1A1?}
-        Po_Reg -- Non --> ErrPo1[Erreur: Invalide]
-        Po_Reg -- Oui --> Po_Auto[Auto: Majuscules + Espace]
+        Po_Null -- Non --> Po_Reg{"Regex: A1A 1A1?"}
+        Po_Reg -- Non --> ErrPo1["Erreur: Invalide"]
+        Po_Reg -- Oui --> Po_Auto["Auto: Majuscules + Espace"]
         Po_Auto --> Po_OK
     end
 
     subgraph "4. Sécurité"
         direction TB
-        Odd[<b>Nombre Impair</b>] --> O_Req{Est rempli?}
-        O_Req -- Non --> ErrO1[Erreur: Requis]
-        O_Req -- Oui --> O_Logic{Impair ET Positif?<br/>(n % 2 != 0 && n > 0)}
-        O_Logic -- Non --> ErrO2[Erreur: Doit être impair et positif]
+        Odd["<b>Nombre Impair</b>"] --> O_Req{"Est rempli?"}
+        O_Req -- Non --> ErrO1["Erreur: Requis"]
+        O_Req -- Oui --> O_Logic{"Impair ET Positif?<br/>(n % 2 != 0 && n > 0)"}
+        O_Logic -- Non --> ErrO2["Erreur: Doit être impair et positif"]
         O_Logic -- Oui --> O_OK([OK])
     end
 
