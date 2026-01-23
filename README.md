@@ -94,7 +94,7 @@ graph TD
 ### 1. **OddNumberAttribute**
 Vérifie que le nombre saisi est impair.
 - Permet `null` si utilisé avec `[Required]` séparément
-- Valide que : `n ≠ 0` et `n % 2 ≠ 0`
+- Valide que : `n % 2 ≠ 0`
 - Valide implicitement que le nombre est positif (n > 0) pour éviter les erreurs logiques
 - Message d'erreur : "Le nombre doit être impair et positif."
 - **Note technique :** Retourne `validationContext.MemberName` pour assurer l'association correcte avec le champ dans l'UI Blazor
